@@ -124,8 +124,8 @@ BJMISC_LIBRARY      = $(HOME)/lib/libBJmisc.a  # BJ_UCD jeremic@@ucdavis.edu
 #BLAS_LIBRARY        = $(HOME)/lib/libBlas.a
 LAPACK_LIBRARY      = 
 BLAS_LIBRARY        = 
-#SUPERLU_LIBRARY     = $(HOME)/lib/libSuperLU.a
-SUPERLU_LIBRARY     =
+SUPERLU_LIBRARY     = $(HOME)/lib/libSuperLU.a
+#SUPERLU_LIBRARY     =
 AMD_LIBRARY         = $(HOME)/lib/libAMD.a
 #CBLAS_LIBRARY       = $(HOME)/lib/libCBlas.a
 CBLAS_LIBRARY       =
@@ -402,7 +402,7 @@ MKL_LIB = $(MKLROOT)/lib/intel64
 
 ifeq ($(PROGRAMMING_MODE), SEQUENTIAL)
 
-PARALLEL_LIB = 
+PARALLEL_LIB = -qopenmp
 
 else
 
@@ -433,8 +433,10 @@ HPM_LIB =
 # SuperLU
 
 ifeq ($(PROGRAMMMING_MODE), SEQUENTIAL)
-SUPERLU_INC = -I$(TACC_PARMETIS_INC)
-SUPERLU_LIB = -L$(TACC_PARMETIS_LIB) -lsuperlu
+#SUPERLU_INC = -I$(TACC_SUPERLUSEQ_INC)
+#SUPERLU_LIB = -L$(TACC_SUPERLUSEQ_LIB) -lsuperlu
+SUPERLU_INC =
+SUPERLU_LIB =
 endif
 
 ifeq ($(PROGRAMMING_MODE), PARALLEL)
@@ -456,7 +458,7 @@ ARPACK_LIB = -L$(TACC_ARPACK_LIB) -larpack
 #UMFPACK
 
 UMFPACK_INC = -I$(TACC_PARMETIS_INC)
-UMFPACK_LIB = -L$(TACC_PARMETIS_LIB) -lumfpack -lcholmod
+UMFPACK_LIB = -L$(TACC_PARMETIS_LIB) -lumfpack -lcholmod -lcolamd
 
 MACHINE_NUMERICAL_LIBS  = -lm \
   $(ARPACK_LIBRARY) \
