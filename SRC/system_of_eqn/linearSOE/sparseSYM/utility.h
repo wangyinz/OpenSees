@@ -73,7 +73,7 @@ void  minoni( int n, int *v );
  * Notes:  v1 = v1 + alpha*v2
  * Used in ... nmat.c
  */
-void  saxpy( double *v1, double *v2, double alpha, int n );
+//void  saxpy( double *v1, double *v2, double alpha, int n );
 
 
 /*

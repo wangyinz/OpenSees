@@ -71,7 +71,7 @@ void  minoni(int n, int *v)
 }
 /************************* end of function *************************/
 
-void  saxpy(double *v1, double *v2, double alpha, int n)
+/*void  saxpy(double *v1, double *v2, double alpha, int n)
 {
 	double  *end;
 
@@ -85,7 +85,7 @@ void  saxpy(double *v1, double *v2, double alpha, int n)
 		*v1 += *v2 * alpha;
    
 	return;
-}
+}*/
 /************************* end of function *************************/
 
 void  copyi(int n, int *from, int *to)

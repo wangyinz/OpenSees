@@ -54,17 +54,27 @@ RELIABILITY = NO_RELIABILITY
 
 GRAPHICS = NONE
 
+# Note from Wang: Have to use the SUPERLU here as headers.
+# Using the TACC built-in one will have some dependency issue.
 
-BLASdir      = $(HOME)/OpenSees/OTHER/BLAS
-CBLASdir     = $(HOME)/OpenSees/OTHER/CBLAS
+#BLASdir      = $(HOME)/OpenSees/OTHER/BLAS
+#CBLASdir     = $(HOME)/OpenSees/OTHER/CBLAS
+BLASdir      =
+CBLASdir     =
 AMDdir    = $(HOME)/OpenSees/OTHER/AMD
-LAPACKdir    = $(HOME)/OpenSees/OTHER/LAPACK
-ARPACKdir    = $(HOME)/OpenSees/OTHER/ARPACK
-UMFPACKdir   = $(HOME)/OpenSees/OTHER/UMFPACK
-METISdir     = $(HOME)/OpenSees/OTHER/METIS
+#LAPACKdir    = $(HOME)/OpenSees/OTHER/LAPACK
+LAPACKdir    =
+#ARPACKdir    = $(HOME)/OpenSees/OTHER/ARPACK
+#UMFPACKdir   = $(HOME)/OpenSees/OTHER/UMFPACK
+ARPACKdir    =
+UMFPACKdir   =
+#METISdir     = $(HOME)/OpenSees/OTHER/METIS
+METISdir     =
 SRCdir       = $(HOME)/OpenSees/SRC
 SUPERLUdir   = $(HOME)/OpenSees/OTHER/SuperLU_5.1.1/SRC
 SUPERLU_DISTdir   = $(HOME)/OpenSees/OTHER/SuperLU_DIST_4.3/SRC
+#SUPERLUdir   =
+#SUPERLU_DISTdir   =
 CSPARSEdir   = $(HOME)/OpenSees/OTHER/CSPARSE
 
 
@@ -114,14 +124,20 @@ BJMISC_LIBRARY      = $(HOME)/lib/libBJmisc.a  # BJ_UCD jeremic@@ucdavis.edu
 #BLAS_LIBRARY        = $(HOME)/lib/libBlas.a
 LAPACK_LIBRARY      = 
 BLAS_LIBRARY        = 
-SUPERLU_LIBRARY     = $(HOME)/lib/libSuperLU.a
-AMD_LIBRARY     = $(HOME)/lib/libAMD.a
-CBLAS_LIBRARY       = $(HOME)/lib/libCBlas.a
-ARPACK_LIBRARY      = $(HOME)/lib/libArpack.a
-UMFPACK_LIBRARY     = $(HOME)/lib/libUmfpack.a
-METIS_LIBRARY       = 
+#SUPERLU_LIBRARY     = $(HOME)/lib/libSuperLU.a
+SUPERLU_LIBRARY     =
+AMD_LIBRARY         = $(HOME)/lib/libAMD.a
+#CBLAS_LIBRARY       = $(HOME)/lib/libCBlas.a
+CBLAS_LIBRARY       =
+#ARPACK_LIBRARY      = $(HOME)/lib/libArpack.a
+#UMFPACK_LIBRARY     = $(HOME)/lib/libUmfpack.a
+ARPACK_LIBRARY      =
+UMFPACK_LIBRARY     =
+#METIS_LIBRARY       = $(HOME)/lib/libMetis.a
+METIS_LIBRARY       =
 CSPARSE_LIBRARY     = $(HOME)/lib/libCSparse.a 
-DISTRIBUTED_SUPERLU_LIBRARY     = $(HOME)/lib/libDistributedSuperLU.a
+#DISTRIBUTED_SUPERLU_LIBRARY     = $(HOME)/lib/libDistributedSuperLU.a
+DISTRIBUTED_SUPERLU_LIBRARY     =
 
 ifeq ($(PROGRAMMING_MODE), SEQUENTIAL)
 DISTRIBUTED_SUPERLU_LIBRARY     = 
@@ -305,7 +321,7 @@ MACHINE_LINKLIBS  = -L$(BASE)/lib \
 
 # PETSC
 HAVEPETSC = NO
-PETSCINC =
+PETSC_INC =
 PETSC_LIB = 
 
 ifeq ($(PROGRAMMMING_MODE), SEQUENTIAL)
@@ -402,7 +418,7 @@ PARALLEL_LIB = \
 	$(MKL_LIB)/libmkl_core.a \
 	$(MKL_LIB)/libmkl_sequential.a \
 	$(MKL_LIB)/libmkl_core.a \
-        -lmetis -lparmetis  
+        -lmetis -lparmetis -qopenmp 
 
 endif
 
@@ -413,10 +429,42 @@ HPM_LIB =
 #  $(FE)/system_of_eqn/linearSOE/sparseGEN/DistributedSparseGenColLinSOE.o \
 #  $(FE)/system_of_eqn/linearSOE/sparseGEN/DistributedSuperLU.o \
 
+
+# SuperLU
+
+ifeq ($(PROGRAMMMING_MODE), SEQUENTIAL)
+SUPERLU_INC = -I$(TACC_PARMETIS_INC)
+SUPERLU_LIB = -L$(TACC_PARMETIS_LIB) -lsuperlu
+endif
+
+ifeq ($(PROGRAMMING_MODE), PARALLEL)
+SUPERLU_INC = -I$(TACC_PARMETIS_INC)
+SUPERLU_LIB = -L$(TACC_PARMETIS_LIB) -lsuperlu -lsuperlu_dist
+endif
+
+ifeq ($(PROGRAMMING_MODE), PARALLEL_INTERPRETERS)
+SUPERLU_INC = -I$(TACC_PARMETIS_INC)
+SUPERLU_LIB = -L$(TACC_PARMETIS_LIB) -lsuperlu -lsuperlu_dist
+endif
+
+
+#ARPACK
+
+ARPACK_LIB = -L$(TACC_ARPACK_LIB) -larpack
+
+
+#UMFPACK
+
+UMFPACK_INC = -I$(TACC_PARMETIS_INC)
+UMFPACK_LIB = -L$(TACC_PARMETIS_LIB) -lumfpack -lcholmod
+
 MACHINE_NUMERICAL_LIBS  = -lm \
   $(ARPACK_LIBRARY) \
+  $(ARPACK_LIB) \
   $(SUPERLU_LIBRARY) \
+  $(SUPERLU_LIB) \
   $(UMFPACK_LIBRARY) \
+  $(UMFPACK_LIB) \
   $(AMD_LIBRARY) \
   $(GRAPHIC_LIBRARY)\
   $(RELIABILITY_LIBRARY) \
@@ -443,19 +491,30 @@ endif
 # %---------------------------------------------------------%
 
 MACHINE_INCLUDES = -I$(MPICH_HOME)/include \
-	 -I/usr/local/BerkeleyDB.4.0/include \
 	-I/usr/include/mysql \
 	-I$(HOME)/include   \
-	-I$(UMFPACKdir) \
 	-I$(SUPERLUdir) \
 	-I$(SUPERLU_DISTdir) \
-	$(PETSC_INC) $(MUMPS_INCLUDE)
+	$(UMFPACK_INC) $(SUPERLU_INC) \
+        $(PETSC_INC) $(MUMPS_INCLUDE) -qopenmp
 
+#	-I$(UMFPACKdir) \
+
+ifeq ($(PROGRAMMING_MODE), SEQUENTIAL)
+
+PARALLEL_INC = 
+
+else
+
+
+PARALLEL_INC = -qopenmp 
+
+endif
 
 # this file contains all the OpenSees/SRC includes
 include $(FE)/Makefile.incl
 
 #TCL_INCLUDES = -I$(HOME)/include
 PYTHON_INCLUDES =-I/opt/apps/intel17/python3/3.6.3/include/python3.6m
-INCLUDES =  $(TCL_INCLUDES) $(PYTHON_INCLUDES) $(FE_INCLUDES) $(MACHINE_INCLUDES)
+INCLUDES =  $(TCL_INCLUDES) $(PYTHON_INCLUDES) $(FE_INCLUDES) $(MACHINE_INCLUDES) $(PARALLEL_INC)
 
